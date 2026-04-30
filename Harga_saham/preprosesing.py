@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
+import joblib # Disarankan untuk simpan scaler
 
 # =========================
 # 1. LOAD DATA CLEAN
@@ -8,9 +9,10 @@ from sklearn.preprocessing import MinMaxScaler
 df = pd.read_csv('data/dataset_clean.csv')
 
 # =========================
-# 2. PILIH FITUR
+# 2. PILIH FITUR (Update: 6 Variabel)
 # =========================
-fitur = ['Close', 'Laba Bersih (Juataan Rp)']
+# Sesuaikan nama kolom dengan hasil cleaning tadi
+fitur = ['Open', 'High', 'Low', 'Close', 'Volume', 'Laba Bersih (Juataan Rp)']
 data = df[fitur].values
 
 # =========================
@@ -19,7 +21,10 @@ data = df[fitur].values
 scaler = MinMaxScaler(feature_range=(0, 1))
 data_scaled = scaler.fit_transform(data)
 
-print("Contoh data setelah normalisasi:")
+# Simpan scaler agar bisa dipakai di Web nanti (sangat penting!)
+joblib.dump(scaler, 'data/scaler.pkl')
+
+print("Contoh data (6 kolom) setelah normalisasi:")
 print(data_scaled[:5])
 
 # =========================
@@ -28,17 +33,21 @@ print(data_scaled[:5])
 X, y = [], []
 
 for i in range(60, len(data_scaled)):
-    X.append(data_scaled[i-60:i])   # 60 hari sebelumnya
-    y.append(data_scaled[i, 0])     # target = Close
+    # X mengambil ke-6 fitur sebagai input
+    X.append(data_scaled[i-60:i])   
+    
+    # y tetap mengambil kolom 'Close' sebagai target 
+    # Index 3 adalah 'Close' dalam daftar fitur kita (Open=0, High=1, Low=2, Close=3...)
+    y.append(data_scaled[i, 3])     
 
 X, y = np.array(X), np.array(y)
 
-print("\nSebelum split:")
-print("X shape:", X.shape)
-print("y shape:", y.shape)
+print("\nShape setelah Update Multivariate:")
+print("X shape:", X.shape) # Harus (N, 60, 6)
+print("y shape:", y.shape) # Harus (N,)
 
 # =========================
-# 5. SPLIT DATA (80/10/10)
+# 5. SPLIT DATA (80/10/10) - Urut Waktu
 # =========================
 train_size = int(len(X) * 0.8)
 val_size = int(len(X) * 0.1)
@@ -53,30 +62,13 @@ X_test = X[train_size+val_size:]
 y_test = y[train_size+val_size:]
 
 # =========================
-# 6. CEK HASIL SPLIT
+# 6. SIMPAN DATA SPLIT
 # =========================
-print("\nDetail Split:")
-print("X_train:", X_train.shape)
-print("y_train:", y_train.shape)
-
-print("X_val:", X_val.shape)
-print("y_val:", y_val.shape)
-
-print("X_test:", X_test.shape)
-print("y_test:", y_test.shape)
-
-# =========================
-# 7. SIMPAN DATA SPLIT
-# =========================
-import numpy as np
-
 np.save('data/X_train.npy', X_train)
 np.save('data/y_train.npy', y_train)
-
 np.save('data/X_val.npy', X_val)
 np.save('data/y_val.npy', y_val)
-
 np.save('data/X_test.npy', X_test)
 np.save('data/y_test.npy', y_test)
 
-print("\nData split berhasil disimpan!")
+print("\nPreprocessing 6 Variabel Selesai & Data Tersimpan!")
