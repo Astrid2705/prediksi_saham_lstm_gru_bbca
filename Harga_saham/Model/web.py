@@ -8,6 +8,8 @@ from tensorflow.keras.models import load_model
 from datetime import datetime, timedelta
 import base64
 from pathlib import Path
+from datetime import datetime
+import pytz
 
 # ==========================================
 # KONFIGURASI & LOAD CSS
@@ -173,6 +175,16 @@ with st.sidebar:
     """, unsafe_allow_html=True)
 
     # HARGA TERAKHIR (LIVE)
+def create_live_price_card(latest_close, price_change, price_change_pct, change_class, change_sign, change_symbol, current_time, is_market_open):
+
+    # === WIT (Waktu Indonesia Timur) ===
+    wit = pytz.timezone('Asia/Jayapura')
+    current_time = datetime.now(wit).strftime("%d %B %Y %H:%M:%S WIT")
+    
+    change_symbol = "↓" if price_change < 0 else "↑"
+    change_color = "#ef4444" if price_change < 0 else "#22c55e"
+    
+    """Membuat card Harga Terakhir Live"""
     st.markdown(f"""
     <div class="live-price-box">
         <div class="live-label">
@@ -185,7 +197,7 @@ with st.sidebar:
             <span style="font-size:16px;">{change_symbol}</span>
         </div>
         <div class="update-time">
-            Update: {current_time}<br>
+            Update: <strong>{current_time}</strong>
             <span class="market-status">● {is_market_open}</span>
         </div>
     </div>
@@ -313,8 +325,29 @@ with right:
 
 with left:
     st.subheader("📋 Data Historical (60 Hari Terakhir)")
+
     hist = df[['Open', 'High', 'Low', 'Close', 'Volume']].copy()
+
+    # urutkan dulu saat masih datetime
+    hist = hist.sort_index(ascending=False)
+
+    # baru ubah format tanggal
     hist.index = hist.index.strftime('%d/%m/%Y')
     st.dataframe(hist.sort_index(ascending=False).style.format({"Open": "Rp {:,.2f}", "High": "Rp {:,.2f}", "Low": "Rp {:,.2f}", "Close": "Rp {:,.2f}", "Volume": "{:,.0f}"}), use_container_width=True, height=400)
+    hist.index.name = "Tanggal"
+
+    st.dataframe(
+        hist.style.format({
+            "Open": "Rp {:,.2f}",
+            "High": "Rp {:,.2f}",
+            "Low": "Rp {:,.2f}",
+            "Close": "Rp {:,.2f}",
+            "Volume": "{:,.0f}"
+        }),
+        use_container_width=True,
+        height=400
+    )
+
+    st.markdown('</div>', unsafe_allow_html=True)
 
 st.caption("Dashboard Prediksi Saham BBCA • Hover di Candlestick untuk melihat OHLCV")
