@@ -48,6 +48,15 @@ def create_sidebar_header():
     """, unsafe_allow_html=True)
     return False
 
+def create_sidebar_mini_icons():
+    st.markdown("""
+    <div class="sidebar-mini-icons">
+        <div title="Dashboard">⌂</div>
+        <div title="Analytics">◈</div>
+        <div title="Model">◎</div>
+        <div title="Settings">⚙</div>
+    </div>
+    """, unsafe_allow_html=True)
 
 def create_kontrol_sistem_card():
     st.markdown("""

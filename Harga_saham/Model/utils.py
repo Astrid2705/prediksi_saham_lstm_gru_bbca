@@ -52,7 +52,7 @@ def _parse_market_state(state: str) -> dict:
         "POST": {
             "state": "POST",
             "is_open": False,
-            "label": "Pasca-Pasar",
+            "label": "Market Tutup",
             "dot_class": "market-dot-post",
             "badge_class": "market-badge-post",
             "dot_color": "#2563eb",
@@ -78,7 +78,7 @@ def _parse_market_state(state: str) -> dict:
     )
 
 
-@st.cache_data(ttl=60)
+@st.cache_data(ttl=10, show_spinner=False)
 def get_market_status() -> dict:
 
     # =============================
@@ -136,7 +136,7 @@ def get_market_status() -> dict:
 # =========================================================
 # LIVE PRICE
 # =========================================================
-@st.cache_data(ttl=60)
+@st.cache_data(ttl=10)
 def get_live_price():
 
     # =============================
@@ -249,7 +249,7 @@ def get_live_price():
 # =========================================================
 # HISTORICAL DATA
 # =========================================================
-@st.cache_data(ttl=300)
+@st.cache_data(ttl=100, show_spinner=False)
 def get_live_data():
 
     try:
@@ -303,7 +303,7 @@ def get_stock_change_info(df):
 # =========================================================
 # USD IDR
 # =========================================================
-@st.cache_data(ttl=60)
+@st.cache_data(ttl=10, show_spinner=False)
 def get_usd_idr():
 
     try:
@@ -332,8 +332,8 @@ def get_usd_idr():
 def get_inflasi_terbaru():
 
     return {
-        "nilai": "2.42%",
-        "periode": "April 2026",
+        "nilai": "2.51%",
+        "periode": "Mei 2026",
         "jenis": "YoY (Tahunan)",
-        "update": "05 Mei 2026",
+        "update": "02 Juni 2026",
     }

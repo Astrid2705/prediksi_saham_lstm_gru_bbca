@@ -54,7 +54,7 @@ header {
 }
 
 [data-testid="stSidebar"]>div:first-child {
-    padding: 0 !important;
+    padding: 1rem !important;
 }
 
 [data-testid="stSidebar"] p,
@@ -79,9 +79,11 @@ header {
 section[data-testid="stSidebar"] {
     min-width: 320px !important;
     max-width: 320px !important;
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
+}
+
+[data-testid="collapsedControl"]{
+    display:block !important;
+    visibility:visible !important;
 }
 
 /* ── Header Sidebar ──────────────────────────────── */
@@ -349,6 +351,68 @@ section[data-testid="stSidebar"] {
     font-size: 10px !important;
     color: rgba(255, 255, 255, 0.35) !important;
     line-height: 1.6;
+}
+
+/* =========================================
+   Sidebar saat collapse
+========================================= */
+
+/* ukuran sidebar normal */
+section[data-testid="stSidebar"] {
+    min-width: 320px !important;
+    max-width: 320px !important;
+}
+
+/* saat collapse -> sisakan strip kecil */
+section[data-testid="stSidebar"][aria-expanded="false"] {
+    min-width: 70px !important;
+    max-width: 70px !important;
+}
+
+/* sembunyikan teks saat collapse */
+section[data-testid="stSidebar"][aria-expanded="false"] .sidebar-header h2,
+section[data-testid="stSidebar"][aria-expanded="false"] .sidebar-header p,
+section[data-testid="stSidebar"][aria-expanded="false"] .kontrol-card,
+section[data-testid="stSidebar"][aria-expanded="false"] .model-card,
+section[data-testid="stSidebar"][aria-expanded="false"] .live-price-box,
+section[data-testid="stSidebar"][aria-expanded="false"] .system-status,
+section[data-testid="stSidebar"][aria-expanded="false"] .sidebar-footer {
+    display: none !important;
+}
+
+/* tampilkan icon mini */
+.sidebar-mini-icons{
+    display:none;
+    transition: all 0.3s ease;
+}
+
+.sidebar-mini-icons div{
+    width:42px;
+    height:42px;
+    border-radius:12px;
+    background: rgba(255,255,255,0.08);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:20px;
+    backdrop-filter: blur(8px);
+    cursor:pointer;
+    transition:0.25s;
+}
+
+.sidebar-mini-icons div:hover{
+    background: rgba(255,255,255,0.18);
+    transform: scale(1.08);
+}
+
+section[data-testid="stSidebar"][aria-expanded="false"] .sidebar-mini-icons{
+    display:flex !important;
+    flex-direction:column;
+    align-items:center;
+    gap:20px;
+    margin-top:40px;
+    font-size:24px;
+    color:white;
 }
 
 /* ══════════════════════════════════════════════════
@@ -630,11 +694,11 @@ div[data-testid="stHorizontalBlock"] .stRadio label {
 /* ── Estimation Card ─────────────────────────────── */
 .estimation-container {
     background: white;
-    border-radius: 16px;
+    border-radius: 20px;
     padding: 18px;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
     border: 1px solid #f1f5f9;
-    height: 100%;
+    height: 420px;
 }
 
 .est-header {
