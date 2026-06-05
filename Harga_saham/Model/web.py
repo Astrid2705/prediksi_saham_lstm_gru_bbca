@@ -281,7 +281,7 @@ with c5:
         unsafe_allow_html=True,
     )
 
-# lanjutkan bagian grafik, tabel historical, dan feature card seperti file sebelumnya
+
 
 
 # =============================================================================
@@ -300,10 +300,24 @@ period_map = {
 }
 
 # ── Header baris: judul+legend+radio (kiri) | tipe chart (kanan) ─────────────
+
+st.markdown("""
+    <h2 style="
+        text-align:center;
+        font-size:30px;
+        font-weight:700;
+        color:#1e293b;
+        margin-top:10px;
+        margin-bottom:20px;
+    ">
+        Grafik Saham (BBCA.JK)
+    </h2>
+    """, unsafe_allow_html=True)
+
 col_chart_header, col_chart_type = st.columns([7, 3])
 
 with col_chart_header:
-    
+
     # Radio periode — tepat di bawah judul grafik
     selected_period = st.radio(
         "Periode",
@@ -431,7 +445,7 @@ st.markdown("""
     margin-top:10px;
     margin-bottom:20px;
 ">
-    Grafik Laba Bersih BBCA
+    Grafik Laba Bersih (BBCA.JK)
 </h2>
 """, unsafe_allow_html=True)
 
