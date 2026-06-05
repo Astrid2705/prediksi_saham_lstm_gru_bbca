@@ -7,13 +7,21 @@ dan mengolah data eksternal maupun lokal.
 
 import base64
 from datetime import datetime
+from pathlib import Path
 
 import pandas as pd
 import pytz
 import streamlit as st
 import yfinance as yf
 
+from pathlib import Path
 
+BASE_DIR = Path(__file__).resolve().parent
+
+CSV_PATH = BASE_DIR.parent / "Data" / "laporan keuangan bca.csv"
+
+print("CSV_PATH =", CSV_PATH)
+print("FILE ADA =", CSV_PATH.exists())
 # =========================================================
 # IMAGE
 # =========================================================
@@ -78,7 +86,7 @@ def _parse_market_state(state: str) -> dict:
     )
 
 
-@st.cache_data(ttl=10, show_spinner=False)
+@st.cache_data(ttl=60, show_spinner=False)
 def get_market_status() -> dict:
 
     # =============================
@@ -118,7 +126,7 @@ def get_market_status() -> dict:
 
     # Sabtu / Minggu
     if hari >= 5:
-        return _parse_market_state("CLOSED")
+        return _parse_market_state("CLOSED") 
 
     # Jam Bursa IDX
     if (9 * 60 <= menit < 12 * 60) or (13 * 60 + 30 <= menit < 15 * 60):
@@ -136,7 +144,7 @@ def get_market_status() -> dict:
 # =========================================================
 # LIVE PRICE
 # =========================================================
-@st.cache_data(ttl=10)
+@st.cache_data(ttl=60, show_spinner=False)
 def get_live_price():
 
     # =============================
@@ -249,7 +257,7 @@ def get_live_price():
 # =========================================================
 # HISTORICAL DATA
 # =========================================================
-@st.cache_data(ttl=100, show_spinner=False)
+@st.cache_data(ttl=300, show_spinner=False)
 def get_live_data():
 
     try:
@@ -303,7 +311,7 @@ def get_stock_change_info(df):
 # =========================================================
 # USD IDR
 # =========================================================
-@st.cache_data(ttl=10, show_spinner=False)
+@st.cache_data(ttl=60, show_spinner=False)
 def get_usd_idr():
 
     try:
@@ -328,7 +336,7 @@ def get_usd_idr():
 # =========================================================
 # INFLASI
 # =========================================================
-@st.cache_data(ttl=86400)
+@st.cache_data(ttl=10, show_spinner=False)
 def get_inflasi_terbaru():
 
     return {
@@ -337,3 +345,42 @@ def get_inflasi_terbaru():
         "jenis": "YoY (Tahunan)",
         "update": "02 Juni 2026",
     }
+# =========================================================
+# LAPORAN KEUANGAN
+# =========================================================
+@st.cache_data(ttl=10, show_spinner=False)
+def get_laporan_keuangan():
+
+    try:
+        df = pd.read_csv(
+            CSV_PATH,
+            sep=";"
+        )
+
+        df.columns = [
+            "Periode",
+            "Total_Aset",
+            "Kredit",
+            "Laba_Bersih",
+            "DPK"
+        ]
+
+        # Hilangkan titik pemisah ribuan
+        for col in ["Total_Aset", "Kredit", "Laba_Bersih", "DPK"]:
+            df[col] = (
+                df[col]
+                .astype(str)
+                .str.replace(".", "", regex=False)
+                .str.replace(",", ".", regex=False)
+            )
+
+            df[col] = pd.to_numeric(
+                df[col],
+                errors="coerce"
+            )
+
+        return df
+
+    except Exception as e:
+        st.error(f"Gagal membaca laporan keuangan: {e}")
+        return None

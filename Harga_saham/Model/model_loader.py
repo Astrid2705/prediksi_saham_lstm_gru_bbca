@@ -99,3 +99,31 @@ def predict_recursive(model, scaler, data_input, days=5):
         current_batch = np.append(current_batch[1:], [new_row], axis=0)
 
     return preds
+
+
+def predict_historical(model, scaler, data_input):
+    """
+    Membuat prediksi untuk data historis menggunakan
+    sliding window 60 hari.
+    """
+
+    actual = []
+    predicted = []
+
+    for i in range(60, len(data_input)):
+        window = data_input[i-60:i]
+
+        scaled = scaler.transform(window)
+        inp = scaled.reshape((1, 60, 6))
+
+        pred_scaled = model.predict(inp, verbose=0)
+
+        dummy = np.zeros((1, 6))
+        dummy[0, 3] = pred_scaled[0, 0]
+
+        pred_price = scaler.inverse_transform(dummy)[0, 3]
+
+        predicted.append(pred_price)
+        actual.append(data_input[i][3])  # kolom Close
+
+    return actual, predicted

@@ -19,6 +19,8 @@ Cara menjalankan:
 """
 
 import streamlit as st
+import pandas as pd
+import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import pytz
 import streamlit.components.v1 as components
@@ -30,8 +32,13 @@ from utils import (
     get_stock_change_info,
     get_usd_idr,
     get_inflasi_terbaru,
+    get_laporan_keuangan,
 )
-from model_loader import load_assets, predict_recursive
+from model_loader import (
+    load_assets,
+    predict_recursive,
+    predict_historical
+)
 from sidebar import (
     create_sidebar_header,
     create_sidebar_mini_icons,
@@ -69,7 +76,7 @@ latest_date = df_full.index[-1]
 if "refresh_count" not in st.session_state:
     st.session_state["refresh_count"] = 0
 
-@st.fragment(run_every="10s")
+@st.fragment(run_every="30s")
 def auto_update_live_data():
     st.session_state["refresh_count"] += 1
 
@@ -137,6 +144,28 @@ with st.sidebar:
 # 4. PREDIKSI
 # =============================================================================
 preds = predict_recursive(model, scaler, df_model.values, days=5)
+
+# =============================================================================
+# HISTORICAL PREDICTION (BACKTEST)
+# =============================================================================
+
+@st.cache_data(ttl=3600, show_spinner=False)
+def get_hist_prediction(data):
+    _, pred = predict_historical(
+        model,
+        scaler,
+        data
+    )
+    return pred
+
+# cukup ambil data maksimal 1 tahun
+data_hist = df_full.tail(425)
+
+pred_hist = get_hist_prediction(
+    data_hist.values
+)
+
+hist_dates = data_hist.index[60:]
 future_dates = []
 d = latest_date + timedelta(days=1)
 while len(future_dates) < 5:
@@ -259,30 +288,22 @@ with c5:
 # 8. GRAFIK + KARTU ESTIMASI
 # =============================================================================
 if "periode_grafik" not in st.session_state:
-    st.session_state["periode_grafik"] = "3M"
+    st.session_state["periode_grafik"] = "3 Bulan"
 
-period_map = {"1M": 30, "3M": 90, "6M": 180, "1T": 365, "Semua": len(df_full)}
+period_map = {
+    "1 Minggu": 7,
+    "3 Minggu": 21,
+    "1 Bulan": 30,
+    "3 Bulan": 90,
+    "6 Bulan": 180,
+    "1 Tahun": 365
+}
 
 # ── Header baris: judul+legend+radio (kiri) | tipe chart (kanan) ─────────────
 col_chart_header, col_chart_type = st.columns([7, 3])
 
 with col_chart_header:
-    st.markdown(
-        f"""
-        <div class="chart-header-block">
-            <div class="chart-title-text">Tren Harga Historis vs Estimasi {algo}</div>
-            <div class="chart-legend-row">
-                <span class="legend-item">
-                    <span class="legend-line-blue"></span> Harga Historis
-                </span>
-                <span class="legend-item">
-                    <span class="legend-line-orange"></span> Estimasi {algo}
-                </span>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    
     # Radio periode — tepat di bawah judul grafik
     selected_period = st.radio(
         "Periode",
@@ -290,8 +311,9 @@ with col_chart_header:
         index=list(period_map.keys()).index(st.session_state["periode_grafik"]),
         horizontal=True,
         label_visibility="collapsed",
+        key="periode_grafik"
     )
-    st.session_state["periode_grafik"] = selected_period
+    
 
 with col_chart_type:
     st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
@@ -309,20 +331,40 @@ with col_chart_type:
 n_days = period_map[selected_period]
 df_chart = df_full.tail(n_days)
 
+start_date = df_chart.index[0]
+
+filtered_dates = []
+filtered_preds = []
+
+for d, p in zip(hist_dates, pred_hist):
+    if d >= start_date:
+        filtered_dates.append(d)
+        filtered_preds.append(p)
+
+
 # ── Grafik (kiri) | Kartu Estimasi (kanan) ───────────────────────────────────
 col_grafik, col_estimasi = st.columns([7, 3])
 
 with col_grafik:
+
+    
     fig = create_chart(
         df_chart,
         latest_date,
         future_dates,
         latest_close,
         preds,
+        filtered_preds,
+        filtered_dates,
         algo,
         chart_type,
     )
-    st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+    
+    st.plotly_chart(
+        fig,
+        use_container_width=True,
+        config={"displayModeBar": False}
+    )
 
 with col_estimasi:
     # Bangun baris tabel dalam satu string agar tidak ada tag HTML terputus
@@ -368,26 +410,170 @@ with col_estimasi:
                 <tbody>{rows_html}</tbody>
             </table>
         </div>
+    </div>    
         """,
         unsafe_allow_html=True,
     )
 
 st.markdown("<div style='margin-bottom:16px;'></div>", unsafe_allow_html=True)
+# =============================================================================
+# GRAFIK LABA BERSIH
+# =============================================================================
 
+st.markdown("---")
 
+st.markdown("""
+<h2 style="
+    text-align:center;
+    font-size:30px;
+    font-weight:700;
+    color:#1e293b;
+    margin-top:10px;
+    margin-bottom:20px;
+">
+    Grafik Laba Bersih BBCA
+</h2>
+""", unsafe_allow_html=True)
+
+lap_df = get_laporan_keuangan()
+
+if lap_df is not None and not lap_df.empty:
+
+    sp1, col_q, col_year, sp2 = st.columns([2, 2.5, 2.5, 2])
+
+    with col_q:
+        selected_q = st.selectbox(
+            "Quarter",
+            ["Q1", "Q2", "Q3", "Q4"]
+        )
+
+    with col_year:
+
+        tahun_list = sorted(
+            lap_df["Periode"].str[-2:].astype(int).unique()
+        )
+
+        selected_year = st.selectbox(
+            "Tahun",
+            [2000 + y for y in tahun_list],
+            index=len(tahun_list) - 1
+        )
+
+    quarter_map = {
+        "Q1": ["Jan", "Feb", "Mar"],
+        "Q2": ["Apr", "May", "Jun"],
+        "Q3": ["Jul", "Aug", "Sep"],
+        "Q4": ["Oct", "Nov", "Dec"],
+    }
+
+    bulan_q = quarter_map[selected_q]
+    tahun_short = str(selected_year)[-2:]
+
+    filtered = lap_df[
+        lap_df["Periode"].str.endswith(tahun_short)
+    ]
+
+    filtered = filtered[
+        filtered["Periode"].str[:3].isin(bulan_q)
+    ].copy()
+
+    if not filtered.empty:
+
+        # Ubah Periode menjadi tanggal agar urutan bulan benar
+        filtered["Tanggal"] = pd.to_datetime(
+            filtered["Periode"],
+            format="%b-%y"
+        )
+
+        filtered = filtered.sort_values("Tanggal")
+
+        fig_laba = go.Figure()
+
+        # ==========================
+        # BAR
+        # ==========================
+        fig_laba.add_trace(
+            go.Bar(
+                x=filtered["Periode"],
+                y=filtered["Laba_Bersih"],
+                name="Laba Bersih",
+                opacity=0.7
+            )
+        )
+
+        # ==========================
+        # LINE + MARKER
+        # ==========================
+        fig_laba.add_trace(
+            go.Scatter(
+                x=filtered["Periode"],
+                y=filtered["Laba_Bersih"],
+                mode="lines+markers",
+                name="Trend Laba"
+            )
+        )
+
+        # ==========================
+        # LABEL TITIK TERAKHIR
+        # ==========================
+        fig_laba.add_annotation(
+            x=filtered["Periode"].iloc[-1],
+            y=filtered["Laba_Bersih"].iloc[-1],
+            text=f"{filtered['Laba_Bersih'].iloc[-1]:,.0f}",
+            showarrow=True,
+            arrowhead=2,
+            yshift=20
+        )
+
+        fig_laba.update_layout(
+            height=450,
+            template="plotly_white",
+            hovermode="x unified",
+            yaxis_title="Laba Bersih (Jutaan Rp)",
+            xaxis_title="",
+            legend=dict(
+                orientation="h",
+                y=1.20,
+                x=1,
+                xanchor="right"
+            )
+        )
+
+        st.plotly_chart(
+            fig_laba,
+            use_container_width=True
+        )
+
+    else:
+        st.warning(
+            f"Tidak ada data {selected_q} tahun {selected_year}"
+        )
 # =============================================================================
 # 9. TABEL HISTORICAL DATA — 60 hari terakhir
 # =============================================================================
-st.markdown(
-    """
-        <div class="hist-header-row">
-            <span class="section-title" style="margin-bottom:0;">
-                Historical Data (BBCA.JK)
-            </span>
-            <span class="hist-badge">60 Hari Terakhir</span>
-    """,
-    unsafe_allow_html=True,
-)
+st.markdown("""
+<h2 style="
+    text-align:center;
+    font-size:30px;
+    font-weight:700;
+    color:#1e293b;
+    margin-top:20px;
+    margin-bottom:5px;
+">
+    Historical Data (BBCA.JK)
+</h2>
+""", unsafe_allow_html=True)
+
+st.markdown("""
+<p style="
+    text-align:center;
+    color:#64748b;
+    font-size:14px;
+    margin-bottom:15px;
+">
+    60 Hari Terakhir
+</p>
+""", unsafe_allow_html=True)
 
 hist = df_full[["Open", "High", "Low", "Close", "Volume"]].tail(60).copy()
 hist = hist.sort_index(ascending=False)
@@ -408,42 +594,3 @@ st.dataframe(
     height=400,
 )
 
-st.markdown(
-    """
-        <span class="hist-source">📡 Data diambil dari Yahoo Finance (BBCA.JK)</span>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
-
-st.markdown("<div style='margin-bottom:16px;'></div>", unsafe_allow_html=True)
-
-
-# =============================================================================
-# 10. BADGE FITUR UNGGULAN
-# =============================================================================
-b1, b2, b3, b4 = st.columns(4)
-
-features = [
-    ("⚡", "icon-orange", "Real-Time Data", "Data diperbarui langsung dari pasar"),
-    ("🧠", "icon-purple", "Deep Learning", "Arsitektur GRU/LSTM"),
-    ("🎯", "icon-green", "Prediksi Akurat", "Model dioptimasi untuk hasil terbaik"),
-    ("📊", "icon-blue", "Visualisasi Interaktif", "Grafik modern & responsif"),
-]
-
-for col, (icon, ic, title, desc) in zip([b1, b2, b3, b4], features):
-    with col:
-        st.markdown(
-            f"""
-            <div class="feature-card">
-                <div class="feature-icon {ic}">{icon}</div>
-                <div class="feature-text">
-                    <span class="feature-title">{title}</span>
-                    <span class="feature-desc">{desc}</span>
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-st.markdown("<div style='margin-bottom:20px;'></div>", unsafe_allow_html=True)

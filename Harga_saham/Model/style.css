@@ -29,8 +29,24 @@ footer {
     visibility: hidden;
 }
 
-header {
-    visibility: hidden;
+/* Buat header transparan agar tombol sidebar tetap hidup */
+header[data-testid="stHeader"] {
+    background-color: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+
+/* HAPUS PAKSA tombol Deploy/Share di kanan atas */
+header[data-testid="stHeader"] [data-testid="stHeaderActionElements"],
+header[data-testid="stHeader"] .stHeaderActionElements,
+header[data-testid="stHeader"] button[kind="header"] {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0px !important;
+    width: 0px !important;
+    overflow: hidden !important;
+    position: absolute !important;
+    right: 0 !important;
 }
 
 /* ── Latar utama ─────────────────────────────────── */
@@ -85,14 +101,59 @@ section[data-testid="stSidebar"] {
     display:block !important;
     visibility:visible !important;
 }
+/* ==================================================
+   ALGORITHM SELECTBOX
+================================================== */
 
+.algo-select-wrapper{
+    margin-top: 8px;
+}
+
+/* Container selectbox */
+[data-testid="stSidebar"] .stSelectbox{
+    margin: 0 16px 14px 16px;
+}
+
+/* Box select */
+[data-testid="stSidebar"] .stSelectbox > div > div{
+    min-height: 42px;
+
+    border-radius: 12px !important;
+
+    background: rgba(255,255,255,0.08) !important;
+
+    border: 1px solid rgba(255,255,255,0.12) !important;
+
+    text-align: center;
+}
+
+/* Tulisan GRU / LSTM */
+[data-testid="stSidebar"] .stSelectbox span{
+    width:100%;
+    text-align:center !important;
+
+    font-weight:600 !important;
+}
+
+/* Hover */
+[data-testid="stSidebar"] .stSelectbox > div > div:hover{
+    border-color: rgba(100,181,246,.8) !important;
+}
 /* ── Header Sidebar ──────────────────────────────── */
 .sidebar-header {
-    background: rgba(0, 0, 0, 0.25);
-    padding: 20px 16px 16px;
+    margin: 12px 16px;
+
+    background: rgba(255,255,255,0.07);
+
+    border-radius: 14px;
+
+    padding: 18px;
+
+    border: 1px solid rgba(255,255,255,0.10);
+
     text-align: center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    margin-bottom: 0;
+
+    backdrop-filter: blur(12px);
 }
 
 .sidebar-header .logo-container {
@@ -117,14 +178,15 @@ section[data-testid="stSidebar"] {
 
 .sidebar-header h2 {
     color: white !important;
-    font-size: 20px !important;
-    font-weight: 700 !important;
-    margin: 4px 0 2px !important;
+    font-size: 24px !important;
+    font-weight: 800 !important;
+    margin-top: 10px !important;
+    margin-bottom: 4px !important;
     letter-spacing: 1px;
 }
 
 .sidebar-header p {
-    color: rgba(255, 255, 255, 0.6) !important;
+    color: rgba(255,255,255,0.55) !important;
     font-size: 11px !important;
     letter-spacing: 2px;
     margin: 0 !important;
@@ -134,6 +196,7 @@ section[data-testid="stSidebar"] {
 .kontrol-card {
     padding: 14px 16px 6px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    text-align: center;
 }
 
 .kontrol-title {
@@ -143,6 +206,7 @@ section[data-testid="stSidebar"] {
     letter-spacing: 1.5px;
     text-transform: uppercase;
     display: flex;
+    justify-content: center;
     align-items: center;
     gap: 6px;
     margin-bottom: 10px;
@@ -159,9 +223,12 @@ section[data-testid="stSidebar"] {
 .model-card {
     margin: 12px 16px;
     background: rgba(255, 255, 255, 0.07);
-    border-radius: 12px;
-    padding: 14px;
+    border-radius: 14px;
+    padding: 16px;
     border: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
+
+    backdrop-filter: blur(12px);
 }
 
 .model-label {
@@ -175,13 +242,26 @@ section[data-testid="stSidebar"] {
 
 .model-badge {
     display: inline-block;
-    background: #1a73e8;
+
+    background: linear-gradient(
+        135deg,
+        #1a73e8,
+        #3b82f6
+    );
+
     color: white !important;
+
     font-size: 15px !important;
     font-weight: 700 !important;
-    padding: 3px 14px;
-    border-radius: 20px;
-    margin-bottom: 10px;
+
+    padding: 6px 18px;
+
+    border-radius: 999px;
+
+    box-shadow: 0 4px 12px rgba(26,115,232,.35);
+
+    margin-top: 4px;
+    margin-bottom: 12px;
 }
 
 .model-metrics-row {
@@ -192,10 +272,27 @@ section[data-testid="stSidebar"] {
 }
 
 .metric-box {
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 8px;
-    padding: 8px 10px;
-    text-align: left;
+    background: rgba(255,255,255,0.08);
+
+    border: 1px solid rgba(255,255,255,0.06);
+
+    border-radius: 10px;
+
+    min-height: 72px;
+
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+
+    text-align:center;
+
+    padding:10px;
+}
+
+.mae-box{
+    width:100%;
+    margin-top:8px;
 }
 
 .metric-box .metric-label {
@@ -214,18 +311,32 @@ section[data-testid="stSidebar"] {
 }
 
 .model-desc {
+    margin-top: 12px;
+
+    padding-top: 12px;
+
+    border-top: 1px solid rgba(255,255,255,0.08);
+
     font-size: 11px !important;
-    color: rgba(255, 255, 255, 0.55) !important;
+
+    color: rgba(255,255,255,0.55) !important;
+
     line-height: 1.5;
+
+    text-align: center;
 }
 
 /* ── Live Price Card ─────────────────────────────── */
 .live-price-box {
-    margin: 0 16px 12px;
+    margin: 12px 16px;
     background: rgba(255, 255, 255, 0.07);
-    border-radius: 12px;
-    padding: 14px;
+    border-radius: 14px;
+    padding: 16px;
     border: 1px solid rgba(255, 255, 255, 0.1);
+
+    text-align: center;
+
+    backdrop-filter: blur(12px);
 }
 
 .live-section-label {
@@ -246,11 +357,16 @@ section[data-testid="stSidebar"] {
 }
 
 .live-price-number {
-    font-size: 24px !important;
+    font-size: 30px !important;
     font-weight: 800 !important;
+
     color: white !important;
-    letter-spacing: -0.5px;
-    margin-bottom: 4px;
+
+    letter-spacing: -1px;
+
+    margin: 8px 0;
+
+    text-align: center;
 }
 
 .price-change-positive {
@@ -270,6 +386,8 @@ section[data-testid="stSidebar"] {
     color: rgba(255, 255, 255, 0.45) !important;
     margin-top: 6px;
     display: block;
+    text-align: center;
+    line-height: 1.6;
 }
 
 .market-dot-open {
@@ -294,11 +412,15 @@ section[data-testid="stSidebar"] {
 
 /* ── Status Sistem Card ──────────────────────────── */
 .system-status {
-    margin: 0 16px 12px;
+    margin: 12px 16px;
     background: rgba(255, 255, 255, 0.07);
-    border-radius: 12px;
-    padding: 14px;
+    border-radius: 14px;
+    padding: 16px;
     border: 1px solid rgba(255, 255, 255, 0.1);
+
+    text-align: center;
+
+    backdrop-filter: blur(12px);
 }
 
 .status-section-label {
@@ -313,9 +435,10 @@ section[data-testid="stSidebar"] {
 
 .status-row {
     display: flex;
+    justify-content: center;
     align-items: center;
     gap: 8px;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
 }
 
 .status-dot {
@@ -336,8 +459,9 @@ section[data-testid="stSidebar"] {
 .status-sub {
     font-size: 11px !important;
     color: rgba(255, 255, 255, 0.5) !important;
-    margin-top: 2px;
+    margin-top: 6px;
     display: flex;
+    justify-content: center;
     align-items: center;
     gap: 6px;
 }
@@ -424,16 +548,15 @@ section[data-testid="stSidebar"][aria-expanded="false"] .sidebar-mini-icons{
     position: fixed;
     top: 8px;
     right: 14px;
-    z-index: 999;
+    z-index: 999999 !important; /* Paling tinggi di antara semua elemen */
     display: flex;
     align-items: center;
     gap: 10px;
-    background: rgba(255, 255, 255, 0.96);
-    padding: 6px 14px;
+    background: #ffffff !important;  /* Putih solid */
+    padding: 8px 18px;
     border-radius: 30px;
     box-shadow: 0 2px 16px rgba(0, 0, 0, 0.10);
     border: 1px solid #e2e8f0;
-    backdrop-filter: blur(6px);
 }
 
 /* Badge status pasar */
@@ -505,21 +628,20 @@ section[data-testid="stSidebar"][aria-expanded="false"] .sidebar-mini-icons{
 
 /* ── Dashboard Header Area ───────────────────────── */
 .dashboard-header-area {
-    margin-bottom: 20px;
+    text-align: center;
+    margin-bottom: 28px;
 }
 
 .dashboard-title {
-    font-size: 28px !important;
+    font-size: 32px !important;
     font-weight: 800 !important;
     color: #0f172a !important;
-    margin-bottom: 4px;
-    line-height: 1.2;
+    margin-bottom: 8px;
 }
 
 .dashboard-subtitle {
-    font-size: 14px !important;
+    font-size: 15px !important;
     color: #64748b !important;
-    margin-bottom: 0;
 }
 
 .algo-highlight {
@@ -531,26 +653,65 @@ section[data-testid="stSidebar"][aria-expanded="false"] .sidebar-mini-icons{
 .metric-card {
     background: white;
     border-radius: 16px;
-    padding: 16px 18px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    padding: 18px;
+
+    box-shadow: 0 2px 12px rgba(0,0,0,.06);
     border: 1px solid #f1f5f9;
-    height: 100%;
-    position: relative;
+
+    min-height: 160px;
+    height: 180px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    text-align: center;
+
     overflow: hidden;
-    min-height: 140px;
 }
 
 .metric-card .card-icon {
-    width: 38px;
-    height: 38px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    margin-bottom: 10px;
+    width: 46px;
+    height: 46px;
+
+    border-radius: 12px;
+
+    font-size: 20px;
+}
+.metric-card:hover {
+    transform: translateY(-4px);
+
+    box-shadow:
+        0 10px 30px rgba(15,23,42,.08);
+
+    border-color: #dbeafe;
+}
+.metric-card .card-label{
+    width:100%;
+    text-align:center;
 }
 
+.metric-card .card-value{
+    width:100%;
+    text-align:center;
+}
+
+.metric-card .card-value-sm{
+    width:100%;
+    text-align:center;
+}
+
+.metric-card .card-sub{
+    width:100%;
+    text-align:center;
+}
+
+.metric-card .card-change-pos,
+.metric-card .card-change-neg{
+    width:100%;
+    text-align:center;
+}
 .icon-blue {
     background: #dbeafe;
 }
@@ -625,7 +786,7 @@ section[data-testid="stSidebar"][aria-expanded="false"] .sidebar-mini-icons{
 /* ── Chart Header Block ──────────────────────────── */
 .chart-header-block {
     padding-top: 4px;
-    margin-bottom: 4px;
+    margin-bottom: 14px;
 }
 
 .chart-title-text {
@@ -642,7 +803,17 @@ section[data-testid="stSidebar"][aria-expanded="false"] .sidebar-mini-icons{
     margin-bottom: 8px;
     flex-wrap: wrap;
 }
+.chart-container {
+    background: white;
 
+    border-radius: 20px;
+
+    padding: 18px;
+
+    border: 1px solid #f1f5f9;
+
+    box-shadow: 0 2px 12px rgba(0,0,0,.05);
+}
 .legend-item {
     display: flex;
     align-items: center;
@@ -674,10 +845,10 @@ section[data-testid="stSidebar"][aria-expanded="false"] .sidebar-mini-icons{
 
 div[data-testid="stHorizontalBlock"] .stRadio>div {
     display: flex;
-    gap: 4px;
-    background: #f1f5f9;
-    padding: 4px;
-    border-radius: 10px;
+    gap: 10px;
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
     flex-wrap: wrap;
 }
 
@@ -699,7 +870,7 @@ div[data-testid="stHorizontalBlock"] .stRadio label {
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
     border: 1px solid #f1f5f9;
     height: 420px;
-}
+    }
 
 .est-header {
     display: flex;
@@ -722,7 +893,7 @@ div[data-testid="stHorizontalBlock"] .stRadio label {
     font-size: 14px;
     font-weight: 700;
     color: #0f172a;
-    margin-bottom: 14px;
+    margin-bottom: 18px;
     display: block;
 }
 
@@ -737,7 +908,7 @@ div[data-testid="stHorizontalBlock"] .stRadio label {
     background: #f8fafc;
     color: #64748b;
     font-weight: 600;
-    padding: 7px 10px;
+    padding: 14px 10px;
     text-align: left;
     border-bottom: 2px solid #e2e8f0;
     font-size: 11px;
@@ -746,7 +917,7 @@ div[data-testid="stHorizontalBlock"] .stRadio label {
 }
 
 .est-table td {
-    padding: 9px 10px;
+    padding: 15px 10px;
     color: #1e293b;
     font-weight: 500;
     border-radius: 0;
@@ -860,13 +1031,19 @@ div[data-testid="stHorizontalBlock"] .stRadio label {
     display: none;
 }
 
-/* Selectbox tidak bisa diketik manual — hanya pilih dari dropdown */
-.stSelectbox input,
-.stSelectbox [data-baseweb="input"] input {
+/* ── SELECTBOX: Matikan fitur ketik/search total ─────────── */
+.stSelectbox input[role="combobox"],
+.stSelectbox input[type="text"],
+.stSelectbox [data-baseweb="input"] input,
+.stSelectbox [data-baseweb="select"] input {
     pointer-events: none !important;
     caret-color: transparent !important;
-    user-select: none !important;
+    font-size: 0px !important;         /* Tulisan tidak akan kelihatan walau sempat ngetik */
+    color: transparent !important;
     -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+    user-select: none !important;
 }
 
 /* ══════════════════════════════════════════════════
@@ -963,4 +1140,53 @@ div[data-testid="stHorizontalBlock"] .stRadio label {
     .dashboard-title {
         font-size: 15px !important;
     }
+}
+/* ── HILANGKAN tulisan "Running..." dan Spinner ─────────── */
+.stSpinner,
+[data-testid="stSpinner"],
+.stStatusWidget,
+[data-testid="stStatusWidget"] {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+}
+
+/* ==================================================
+   DROPDOWN SELECTBOX SIDEBAR
+================================================== */
+
+/* Popup dropdown */
+div[data-baseweb="popover"] {
+    background: transparent !important;
+}
+
+/* Kotak menu dropdown */
+div[data-baseweb="popover"] ul {
+    background: #20384d !important;
+    border: 1px solid rgba(255,255,255,0.12) !important;
+    border-radius: 12px !important;
+    padding: 6px !important;
+}
+
+/* Item dropdown */
+div[data-baseweb="popover"] li {
+    background: transparent !important;
+    color: white !important;
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+}
+
+/* Hover item */
+div[data-baseweb="popover"] li:hover {
+    background: rgba(255,255,255,0.08) !important;
+}
+
+/* Item terpilih */
+div[data-baseweb="popover"] li[aria-selected="true"] {
+    background: rgba(255,255,255,0.12) !important;
+    color: #64b5f6 !important;
+    font-weight: 700 !important;
 }

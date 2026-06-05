@@ -21,7 +21,17 @@ import plotly.graph_objects as go
 import numpy as np
 
 
-def create_chart(df, latest_date, future_dates, latest_close, preds, algo, chart_type):
+def create_chart(
+    df,
+    latest_date,
+    future_dates,
+    latest_close,
+    preds,
+    pred_hist,
+    hist_dates,
+    algo,
+    chart_type
+):
     """
     Membuat grafik interaktif yang menggabungkan data historis
     dan garis prediksi 5 hari ke depan.
@@ -114,6 +124,25 @@ def create_chart(df, latest_date, future_dates, latest_close, preds, algo, chart
             customdata=ohlc_data,
             hovertemplate=ohlc_hover
         ))
+
+     # ── Prediksi historis model ───────────────────────────────────────────────
+    if len(pred_hist) > 0:
+        fig.add_trace(
+            go.Scatter(
+                x=hist_dates,
+                y=pred_hist,
+                mode='lines',
+                name=f'Prediksi Historis {algo}',
+                line=dict(
+                    color='#ef4444',
+                    width=2,
+                    dash='dash'
+                ),
+                hovertemplate=
+                "<b>%{x|%d %b %Y}</b><br>"
+                "Prediksi: Rp %{y:,.0f}<extra></extra>"
+            )
+        )    
 
     # ── Garis vertikal pemisah historis vs prediksi ───────────────────────────
     # Garis putus-putus di titik tanggal terakhir sebagai batas visual
