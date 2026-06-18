@@ -20,6 +20,8 @@ Cara menjalankan:
 
 import streamlit as st
 import pandas as pd
+import yfinance as yf
+import numpy as np
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import pytz
@@ -69,6 +71,17 @@ if df_full is None or df_full.empty:
 df_model = df_full.tail(60)
 latest_date = df_full.index[-1]
 
+
+# =============================================================================
+# EPS YAHOO FINANCE
+# =============================================================================
+try:
+    ticker = yf.Ticker("BBCA.JK")
+
+    eps_value = ticker.info.get("trailingEps")
+
+except Exception:
+    eps_value = None
 
 # =============================================================================
 # AUTO UPDATE KHUSUS DATA LIVE (tanpa refresh seluruh halaman)
@@ -298,7 +311,11 @@ period_map = {
     "6 Bulan": 180,
     "1 Tahun": 365
 }
-
+show_eps = st.session_state["periode_grafik"] in [
+    "3 Bulan",
+    "6 Bulan",
+    "1 Tahun"
+]
 # ── Header baris: judul+legend+radio (kiri) | tipe chart (kanan) ─────────────
 
 st.markdown("""
@@ -361,6 +378,46 @@ col_grafik, col_estimasi = st.columns([7, 3])
 
 with col_grafik:
 
+    eps_df = pd.DataFrame()
+
+    if show_eps:
+        try:
+            ticker = yf.Ticker("BBCA.JK")
+
+            q = ticker.quarterly_financials
+
+            eps = q.loc["Basic EPS"]
+            net_income = q.loc["Net Income"]
+
+            SHARES = 123_275_000_000
+
+            eps_data = []
+
+            for dt in net_income.index:
+
+                eps_yahoo = eps.get(dt, np.nan)
+
+                if pd.notna(eps_yahoo):
+                    eps_final = eps_yahoo
+                else:
+                    eps_final = net_income[dt] / SHARES
+
+                eps_data.append({
+                    "Tanggal": dt,
+                    "EPS": round(eps_final, 2)
+                })
+
+            eps_df = pd.DataFrame(eps_data)
+
+            eps_df = eps_df.sort_values("Tanggal")
+
+            eps_df = eps_df[
+                eps_df["Tanggal"] >= df_chart.index.min()
+            ]
+
+        except Exception as e:
+            print(e)
+            eps_df = pd.DataFrame()
     
     fig = create_chart(
         df_chart,
@@ -372,6 +429,8 @@ with col_grafik:
         filtered_dates,
         algo,
         chart_type,
+        show_eps,
+        eps_df
     )
     
     st.plotly_chart(
@@ -431,180 +490,69 @@ with col_estimasi:
 
 st.markdown("<div style='margin-bottom:16px;'></div>", unsafe_allow_html=True)
 # =============================================================================
-# GRAFIK LABA BERSIH
+# HISTORICAL DATA
 # =============================================================================
 
 st.markdown("---")
 
-st.markdown("""
-<h2 style="
-    text-align:center;
-    font-size:30px;
-    font-weight:700;
-    color:#1e293b;
-    margin-top:10px;
-    margin-bottom:20px;
-">
-    Grafik Laba Bersih (BBCA.JK)
-</h2>
-""", unsafe_allow_html=True)
+with st.container():
 
-lap_df = get_laporan_keuangan()
+    st.markdown("""
+    <h2 style="
+        text-align:center;
+        font-size:24px;
+        font-weight:700;
+        color:#1e293b;
+        margin-top:10px;
+        margin-bottom:5px;
+    ">
+        Historical Data (BBCA.JK)
+    </h2>
+    """, unsafe_allow_html=True)
 
-if lap_df is not None and not lap_df.empty:
+    st.markdown("""
+    <p style="
+        text-align:center;
+        color:#64748b;
+        font-size:14px;
+        margin-bottom:15px;
+    ">
+        60 Hari Terakhir
+    </p>
+    """, unsafe_allow_html=True)
 
-    sp1, col_q, col_year, sp2 = st.columns([2, 2.5, 2.5, 2])
+    hist = df_full[
+        ["Open", "High", "Low", "Close", "Volume"]
+    ].tail(60).copy()
 
-    with col_q:
-        selected_q = st.selectbox(
-            "Quarter",
-            ["Q1", "Q2", "Q3", "Q4"]
-        )
+    try:
+        ticker = yf.Ticker("BBCA.JK")
 
-    with col_year:
+        net_income = ticker.quarterly_financials.loc["Net Income"]
 
-        tahun_list = sorted(
-            lap_df["Periode"].str[-2:].astype(int).unique()
-        )
+        latest_net_income = net_income.iloc[0]
 
-        selected_year = st.selectbox(
-            "Tahun",
-            [2000 + y for y in tahun_list],
-            index=len(tahun_list) - 1
-        )
+        hist["Net Income"] = latest_net_income
 
-    quarter_map = {
-        "Q1": ["Jan", "Feb", "Mar"],
-        "Q2": ["Apr", "May", "Jun"],
-        "Q3": ["Jul", "Aug", "Sep"],
-        "Q4": ["Oct", "Nov", "Dec"],
-    }
+    except:
+        hist["Net Income"] = np.nan
 
-    bulan_q = quarter_map[selected_q]
-    tahun_short = str(selected_year)[-2:]
+    hist = hist.sort_index(ascending=False)
 
-    filtered = lap_df[
-        lap_df["Periode"].str.endswith(tahun_short)
-    ]
+    hist.index = hist.index.strftime("%d/%m/%Y")
+    hist.index.name = "Tanggal"
 
-    filtered = filtered[
-        filtered["Periode"].str[:3].isin(bulan_q)
-    ].copy()
-
-    if not filtered.empty:
-
-        # Ubah Periode menjadi tanggal agar urutan bulan benar
-        filtered["Tanggal"] = pd.to_datetime(
-            filtered["Periode"],
-            format="%b-%y"
-        )
-
-        filtered = filtered.sort_values("Tanggal")
-
-        fig_laba = go.Figure()
-
-        # ==========================
-        # BAR
-        # ==========================
-        fig_laba.add_trace(
-            go.Bar(
-                x=filtered["Periode"],
-                y=filtered["Laba_Bersih"],
-                name="Laba Bersih",
-                opacity=0.7
-            )
-        )
-
-        # ==========================
-        # LINE + MARKER
-        # ==========================
-        fig_laba.add_trace(
-            go.Scatter(
-                x=filtered["Periode"],
-                y=filtered["Laba_Bersih"],
-                mode="lines+markers",
-                name="Trend Laba"
-            )
-        )
-
-        # ==========================
-        # LABEL TITIK TERAKHIR
-        # ==========================
-        fig_laba.add_annotation(
-            x=filtered["Periode"].iloc[-1],
-            y=filtered["Laba_Bersih"].iloc[-1],
-            text=f"{filtered['Laba_Bersih'].iloc[-1]:,.0f}",
-            showarrow=True,
-            arrowhead=2,
-            yshift=20
-        )
-
-        fig_laba.update_layout(
-            height=450,
-            template="plotly_white",
-            hovermode="x unified",
-            yaxis_title="Laba Bersih (Jutaan Rp)",
-            xaxis_title="",
-            legend=dict(
-                orientation="h",
-                y=1.20,
-                x=1,
-                xanchor="right"
-            )
-        )
-
-        st.plotly_chart(
-            fig_laba,
-            use_container_width=True
-        )
-
-    else:
-        st.warning(
-            f"Tidak ada data {selected_q} tahun {selected_year}"
-        )
-# =============================================================================
-# 9. TABEL HISTORICAL DATA — 60 hari terakhir
-# =============================================================================
-st.markdown("""
-<h2 style="
-    text-align:center;
-    font-size:30px;
-    font-weight:700;
-    color:#1e293b;
-    margin-top:20px;
-    margin-bottom:5px;
-">
-    Historical Data (BBCA.JK)
-</h2>
-""", unsafe_allow_html=True)
-
-st.markdown("""
-<p style="
-    text-align:center;
-    color:#64748b;
-    font-size:14px;
-    margin-bottom:15px;
-">
-    60 Hari Terakhir
-</p>
-""", unsafe_allow_html=True)
-
-hist = df_full[["Open", "High", "Low", "Close", "Volume"]].tail(60).copy()
-hist = hist.sort_index(ascending=False)
-hist.index = hist.index.strftime("%d/%m/%Y")
-hist.index.name = "Tanggal"
-
-st.dataframe(
-    hist.style.format(
-        {
+    st.dataframe(
+        hist.style.format(
+            {
             "Open": "Rp {:,.2f}",
             "High": "Rp {:,.2f}",
             "Low": "Rp {:,.2f}",
             "Close": "Rp {:,.2f}",
             "Volume": "{:,.0f}",
-        }
-    ),
-    use_container_width=True,
-    height=400,
-)
-
+            "Net Income": "{:,.0f}"
+            }
+        ),
+        use_container_width=True,
+        height=353,
+    )

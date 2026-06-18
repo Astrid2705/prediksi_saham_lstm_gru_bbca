@@ -30,7 +30,9 @@ def create_chart(
     pred_hist,
     hist_dates,
     algo,
-    chart_type
+    chart_type,
+    show_eps,
+    eps_df
 ):
     """
     Membuat grafik interaktif yang menggabungkan data historis
@@ -211,6 +213,37 @@ def create_chart(
             yshift=-30
         )
 
+    # =====================================================
+    # EPS QUARTERLY
+    # =====================================================
+    if show_eps and not eps_df.empty:                    # ← WAJIB ada guard ini
+        eps_min = eps_df["EPS"].min()
+        eps_max = eps_df["EPS"].max()
+        eps_pad = (eps_max - eps_min) * 2               # padding 200%
+
+        fig.add_trace(
+            go.Scatter(
+                x=eps_df["Tanggal"],
+                y=eps_df["EPS"],
+                mode="lines+markers",
+                name="EPS (Quarterly)",
+                line=dict(
+                    shape="hv",
+                    color="#16a34a",
+                    width=1.5,
+                    dash="dot"
+                ),
+                marker=dict(
+                    size=10,
+                    color="#16a34a",
+                    line=dict(width=2, color="white")
+                ),
+                yaxis="y2"
+            )
+        )
+    else:
+        eps_min, eps_max, eps_pad = 0, 1, 2             # ← nilai default kalau EPS tidak ditampilkan
+
     # ── Pengaturan tampilan grafik ─────────────────────────────────────────────
     fig.update_layout(
         template="plotly_white",
@@ -240,6 +273,14 @@ def create_chart(
             tickformat=",.0f",
             tickfont=dict(size=11, color="#64748b"),
             showline=False
+        ),
+        yaxis2=dict(
+            title="EPS",
+            overlaying="y",
+            side="right",
+            showgrid=False,
+            tickfont=dict(size=11, color="#16a34a"),
+            range=[eps_min - eps_pad, eps_max + eps_pad]
         )
     )
 

@@ -1190,3 +1190,30 @@ div[data-baseweb="popover"] li[aria-selected="true"] {
     color: #64b5f6 !important;
     font-weight: 700 !important;
 }
+
+/* =========================================
+   DROPDOWN MAIN CONTENT SAJA
+========================================= */
+
+.main .stSelectbox div[data-baseweb="select"] > div{
+    background: white !important;
+    border: 1px solid #dbe2ea !important;
+    border-radius: 10px !important;
+    min-height: 36px !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,.05);
+}
+
+.main .stSelectbox div[data-baseweb="select"] > div:hover{
+    border-color: #1a73e8 !important;
+}
+
+.main .stSelectbox div[data-baseweb="select"]:focus-within > div{
+    border-color: #1a73e8 !important;
+    box-shadow: 0 0 0 3px rgba(26,115,232,.12);
+}
+
+.main .stSelectbox div[data-baseweb="select"] span{
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    color: #1e293b !important;
+}
