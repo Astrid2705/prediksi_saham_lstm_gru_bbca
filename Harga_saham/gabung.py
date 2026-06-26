@@ -3,7 +3,7 @@ import yfinance as yf
 import os
 
 def prepare_dataset():
-    input_file = 'laporan keuangan bca.csv'
+    input_file = 'Data/laporan keuangan bca.csv'
     output_file = 'dataset_siap_training.csv'
     ticker_symbol = "BBCA.JK"
     
@@ -27,11 +27,11 @@ def prepare_dataset():
         df['Periode'] = pd.to_datetime(df['Periode'], format='%b-%y', errors='coerce')
 
         # Hapus baris yang gagal parsing tanggal
-        df = df.dropna(subset=['Periode'])
+        df.sort_values('Periode').reset_index(drop=True)
 
         # Download data saham
         print(f"Downloading historical data for {ticker_symbol}...")
-        stock_data = yf.download(ticker_symbol, start="2017-01-01")['Close']
+        stock_data = yf.download(ticker_symbol, start="2015-01-01")['Close']
 
         if stock_data.empty:
             print("Error: Gagal mengambil data saham.")

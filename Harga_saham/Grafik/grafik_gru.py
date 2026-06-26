@@ -7,9 +7,9 @@ from tensorflow.keras.models import load_model
 # LOAD MODEL & DATA
 # =========================
 model = load_model('../model_gru.h5')
-X_test = np.load('../data/X_test.npy')
-y_test = np.load('../data/y_test.npy')
-scaler = joblib.load('../data/scaler.pkl')
+X_test = np.load('../Data/X_test.npy')
+y_test = np.load('../Data/y_test.npy')
+scaler = joblib.load('../Data/scaler.pkl')
 
 # =========================
 # PREDIKSI

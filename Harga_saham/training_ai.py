@@ -1,5 +1,6 @@
 import numpy as np
 import tensorflow as tf
+import pandas as pd
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, GRU, Dense, Dropout
 from sklearn.metrics import mean_squared_error, mean_absolute_error, mean_absolute_percentage_error
@@ -7,12 +8,12 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error, mean_absolu
 # =========================
 # 1. LOAD DATA HASIL SPLIT
 # =========================
-X_train = np.load('data/X_train.npy')
-y_train = np.load('data/y_train.npy')
-X_val = np.load('data/X_val.npy')
-y_val = np.load('data/y_val.npy')
-X_test = np.load('data/X_test.npy')
-y_test = np.load('data/y_test.npy')
+X_train = np.load('Data/X_train.npy')
+y_train = np.load('Data/y_train.npy')
+X_val = np.load('Data/X_val.npy')
+y_val = np.load('Data/y_val.npy')
+X_test = np.load('Data/X_test.npy')
+y_test = np.load('Data/y_test.npy')
 
 print(f"Data Loaded: Train {X_train.shape}, Input Dim {X_train.shape[2]} Features")
 
@@ -72,3 +73,17 @@ model_lstm.save("model_lstm.h5")
 model_gru.save("model_gru.h5")
 
 print("\nModel Multivariate (LSTM & GRU) Berhasil Disimpan!")
+
+
+
+# Simpan history LSTM
+pd.DataFrame(history_lstm.history).to_csv(
+    "Data/history_lstm.csv", index=False
+)
+
+# Simpan history GRU
+pd.DataFrame(history_gru.history).to_csv(
+    "Data/history_gru.csv", index=False
+)
+
+print("History training berhasil disimpan.")

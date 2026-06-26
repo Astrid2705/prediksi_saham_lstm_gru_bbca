@@ -1,7 +1,7 @@
 import pandas as pd
 
 # 1. Load dataset
-df = pd.read_csv('data/dataset_final_skripsi.csv')
+df = pd.read_csv('Data/dataset_final_skripsi.csv')
 
 # 2. Konversi Tanggal (Penting untuk Time-Series)
 if 'Date' in df.columns:
@@ -39,6 +39,6 @@ print("\nJumlah data setelah cleaning:", len(df))
 print(df[kolom_teknikal + [kolom_laba]].head())
 
 # 9. Simpan hasil cleaning untuk tahap Training
-df.to_csv('data/dataset_clean.csv', index=False)
+df.to_csv('Data/dataset_clean.csv', index=False)
 
 print("\nCleaning selesai! Data OHLCV + Laba sudah siap di dataset_clean.csv")

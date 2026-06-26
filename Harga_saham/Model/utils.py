@@ -341,9 +341,9 @@ def get_inflasi_terbaru():
 
     return {
         "nilai": "2.51%",
-        "periode": "Mei 2026",
+        "periode": "juni 2026",
         "jenis": "YoY (Tahunan)",
-        "update": "02 Juni 2026",
+        "update": "Data statis (manual input untuk kebutuhan sistem)",
     }
 # =========================================================
 # LAPORAN KEUANGAN

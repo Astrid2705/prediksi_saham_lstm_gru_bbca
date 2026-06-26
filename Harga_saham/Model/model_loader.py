@@ -38,16 +38,16 @@ def load_assets(algo_name):
     if algo_name == "GRU":
         model = load_model('../model_gru.h5')
         info = {
-            "mape": "1.89%",
-            "rmse": "0.017241",
-            "mae": "0.012537"
+            "mape": "2.13%",
+            "rmse": "0.013510",
+            "mae": "0.018452"
         }
     else:  # LSTM
         model = load_model('../model_lstm.h5')
         info = {
-            "mape": "3.31%",
-            "rmse": "0.027024",
-            "mae": "0.021892"
+            "mape": "2.73%",
+            "rmse": "0.023904",
+            "mae": "0.017257"
         }
 
     return model, scaler, info

@@ -14,10 +14,10 @@ data_saham['Date'] = pd.to_datetime(data_saham['Date']).dt.tz_localize(None)
 
 # 2. BACA DATA LABA DARI FILE 
 print("Membaca data laba dari file lama...")
-data_lama = pd.read_csv('dataset_siap_training.csv')
+data_lama = pd.read_csv('Data/dataset_siap_training.csv')
 
 # Bersihkan angka laba (hapus titik agar jadi angka asli)
-kolom_laba = 'Laba Bersih (Juataan Rp)'
+kolom_laba = 'Laba_Bersih'
 data_lama[kolom_laba] = data_lama[kolom_laba].astype(str).str.replace('.', '', regex=False)
 data_lama[kolom_laba] = pd.to_numeric(data_lama[kolom_laba])
 
@@ -36,6 +36,6 @@ dataset_lengkap[kolom_laba] = dataset_lengkap[kolom_laba].ffill()
 dataset_lengkap = dataset_lengkap.drop(columns=['Periode'])
 
 # 4. SIMPAN HASILNYA
-dataset_lengkap.to_csv("dataset_final_skripsi.csv", index=False)
+dataset_lengkap.to_csv("Data/dataset_final_skripsi.csv", index=False)
 
 print("Selesai! File 'dataset_final_skripsi.csv' sudah jadi dan siap dipakai.")
